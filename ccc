@@ -1,0 +1,390 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Data.SqlClient;
+using System.Configuration;
+using System.Data;
+
+namespace ConsoleApplication3
+{
+    public class DBClass
+    {
+
+        static SqlConnection cn;
+        static SqlCommand cmd;
+
+        /// <summary>
+        /// Creates a Connection with the Database
+        /// </summary>
+        /// <returns></returns>
+        static SqlConnection GetConnection()
+        {
+            string conStr = "Data Source=inchnilpdb02\\mssqlserver1;Initial Catalog=CHN35_MMS206;User ID=mms206user;Password=mms206user";
+            try
+            {
+                if (!string.IsNullOrEmpty(conStr))
+                {
+                    return new SqlConnection(conStr);
+                }
+                else
+                    return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public static int AddStudent(Student objstudent)
+        {
+            cn = GetConnection();
+            if (cn.State == System.Data.ConnectionState.Closed)
+            {
+                cn.Open();
+            }
+
+            cmd = new SqlCommand("usp_AddStudent", cn); cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.Add(new SqlParameter("@name", objstudent.StudentName));
+            cmd.Parameters.Add(new SqlParameter("@marks", objstudent.Marks));
+            SqlParameter stdNoParam = cmd.Parameters.Add("@stdid", SqlDbType.Int);
+            stdNoParam.Direction = ParameterDirection.Output;
+            int i = cmd.ExecuteNonQuery();
+            cn.Close();
+            if (i > 0)
+            {
+                return (int)stdNoParam.Value;
+            }
+            return 0;
+        }
+
+
+        public static Student SearchStudent(int StdNo)
+        {
+            Student objstudent = new Student();
+            
+            cn = GetConnection();
+            if (cn.State == System.Data.ConnectionState.Closed)
+            {
+                cn.Open();
+            }
+            
+            cmd = new SqlCommand("usp_GetStudentInfo", cn);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@id", StdNo);
+            //cmd.Parameters.Add(new SqlParameter("@id", empNo));
+            SqlDataReader stdReader = cmd.ExecuteReader();
+            if (stdReader.Read())
+            {
+                objstudent.StudentName = stdReader[1].ToString(); //empReader["Name"].ToString() or empReader.GetValue(1).ToString();
+                objstudent.Marks = Convert.ToInt32(stdReader[2].ToString());
+                objstudent.Studentid = StdNo;
+            
+            }
+            return objstudent;
+            
+        }
+
+        public static bool ModifyStudent(Student objStudent)
+        {
+            cn = GetConnection();
+            if (cn.State == System.Data.ConnectionState.Closed)
+            {
+                cn.Open();
+            }
+
+            cmd = new SqlCommand("usp_ModifyStudent", cn); 
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.Add(new SqlParameter("@id", objStudent.Studentid));
+            cmd.Parameters.Add(new SqlParameter("@name",objStudent.StudentName));
+            cmd.Parameters.Add(new SqlParameter("@marks", objStudent.Marks));
+            int result=cmd.ExecuteNonQuery();
+            cn.Close();
+            if (result > 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public static bool RemoveStudent(int stdNo)
+        {
+            cn = GetConnection();
+            if (cn.State == System.Data.ConnectionState.Closed)
+            {
+                cn.Open();
+            }
+            cmd = new SqlCommand("usp_DeleteStudent", cn);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.Add(new SqlParameter("@id", stdNo));
+            int result=cmd.ExecuteNonQuery();
+            cn.Close();
+            if (result > 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        //public static List<Student> ViewStudents()
+        //{
+
+        //    List<Student> lstStudent = new List<Student>();
+        //    cn = GetConnection();
+        //    if (cn.State == System.Data.ConnectionState.Closed)
+        //    {
+        //        cn.Open();
+        //    }
+
+        //    cmd = new SqlCommand("usp_GetStudentsInfo", cn);
+        //    cmd.CommandType = CommandType.StoredProcedure;
+        //    DataSet dsstudent=new DataSet();
+
+        //    SqlDataAdapter stdadapter = new SqlDataAdapter();
+        //    stdadapter.Fill(dsstudent);
+            
+        //    foreach(DataRow dr in dsstudent.Tables[0].Rows)
+        //    {
+        //        Student objStudent = new Student();
+        //        objStudent.Studentid = Convert.ToInt32(dr["StdID"].ToString());
+        //        objStudent.StudentName = dr["StdName"].ToString();
+        //        objStudent.Marks = Convert.ToInt32(dr["Marks"].ToString());
+        //        lstStudent.Add(objStudent);
+
+
+        //    }
+        //    return lstStudent;
+
+        //}
+
+        public static List<Student> ViewStudents()
+        {
+
+            List<Student> lstStudent = new List<Student>();
+            cn = GetConnection();
+            if (cn.State == System.Data.ConnectionState.Closed)
+            {
+                cn.Open();
+            }
+
+            cmd = new SqlCommand("usp_GetStudentsInfo", cn);
+            cmd.CommandType = CommandType.StoredProcedure;
+            
+
+            SqlDataReader stdReader = cmd.ExecuteReader();
+            while (stdReader.Read())
+            {
+
+                Student objStudent = new Student();
+                objStudent.Studentid = Convert.ToInt32(stdReader["StdID"].ToString());
+                objStudent.StudentName = stdReader["StdName"].ToString();
+                objStudent.Marks = Convert.ToInt32(stdReader["Marks"].ToString());
+                lstStudent.Add(objStudent);
+
+
+            }
+            return lstStudent;
+
+        }
+        
+
+
+
+
+    }
+}
+Raw  Istudent
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleApplication3
+{
+    interface IStudent
+    {
+        int Studentid { get; set; }
+        string StudentName { get; set; }
+        int Marks { get;set;}
+        void displayGrade();
+
+
+
+    }
+}
+Raw  program.cs
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleApplication3
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+
+            menu();
+            int option;
+            Console.WriteLine("Please enter option");
+            option = int.Parse(Console.ReadLine());
+            while(option !=5)
+            {
+                switch(option)
+                {
+
+                    case 1: AddStudent();
+                        break;
+
+                    case 2: ViewStudents();
+                        break;
+
+                    case 3: ModifyStudent();
+                        break;
+
+                    case 4: DeleteStudent();
+                        break;
+                    case 5 : break;
+                }
+
+                menu();
+                Console.WriteLine("Please enter option");
+                option = int.Parse(Console.ReadLine());
+
+
+
+                }
+
+               Console.ReadLine();
+
+
+        }
+
+
+        static void menu()
+        {
+            Console.WriteLine("Menu");
+            Console.WriteLine("1.Add Student");
+            Console.WriteLine("2.View Students");
+            Console.WriteLine("3.Modify Student");
+            Console.WriteLine("4.Delete Student");
+
+            
+
+        }
+
+        static void AddStudent()
+        {
+            string name;
+            int marks;
+            Console.WriteLine("Enter name");
+            name = Console.ReadLine();
+            Console.WriteLine("Enter Marks");
+            marks = int.Parse(Console.ReadLine());
+            Student objstudent = new Student();
+            objstudent.StudentName = name;
+            objstudent.Marks = marks;
+            int result = DBClass.AddStudent(objstudent);
+            if (result == 1)
+            {
+
+                Console.WriteLine("Student added.ID:" + result);
+            }
+        }
+
+
+         static void DeleteStudent()
+        {
+           
+            int id;
+           
+            Console.WriteLine("Enter Student ID");
+            id = int.Parse(Console.ReadLine());
+            
+            bool result=DBClass.RemoveStudent(id);
+            if(result==true)
+            {
+
+                Console.WriteLine("Student Deleted.");
+            }
+             
+        }
+
+         static void ViewStudents()
+         {
+
+             List<Student> lststudent = new List<Student>();
+             lststudent = DBClass.ViewStudents();
+             Console.WriteLine("Student Details");
+
+             foreach (Student objstudent in lststudent)
+             {
+                 Console.WriteLine("Student ID:");
+                 Console.WriteLine(objstudent.Studentid);
+                 Console.WriteLine("Student Name:");
+                 Console.WriteLine(objstudent.StudentName);
+                 Console.WriteLine("Student Marks:");
+                 Console.WriteLine(objstudent.Marks);
+                 Console.WriteLine("Student Grade");
+                 objstudent.displayGrade();
+
+
+
+             }
+         }
+
+        
+
+         static void ModifyStudent()
+         {
+             int id;
+
+             Console.WriteLine("Enter Student ID");
+             id = int.Parse(Console.ReadLine());
+
+             Student objStudent = DBClass.SearchStudent(id);
+
+             Console.WriteLine("Student Details");
+             Console.WriteLine(objStudent.StudentName);
+             Console.WriteLine(objStudent.Marks);
+
+
+             Console.WriteLine("Enter 1 to modify name and 2 to modify marks");
+             int opt = int.Parse(Console.ReadLine());
+             if(opt==1)
+             {
+                 Console.WriteLine("Enter name");
+                 objStudent.StudentName = Console.ReadLine();
+
+
+             }
+             else
+             {
+                 Console.WriteLine("Enter name");
+                 objStudent.StudentName = Console.ReadLine();
+
+
+             }
+
+             bool result = DBClass.ModifyStudent(objStudent);
+             if (result == true)
+             {
+                 Console.WriteLine("Student details updated");
+
+                 objStudent = DBClass.SearchStudent(id);
+                 Console.WriteLine("Updated Details");
+                 Console.WriteLine(objStudent.StudentName);
+                 Console.WriteLine(objStudent.Marks);
+
+             }
+
+             
+         }
+
+
+    }
+}
