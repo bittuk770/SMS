@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data.SqlClient;
+using System.Data;
+using System.Configuration;
 
 namespace StudentManagementSystem
 {
@@ -118,14 +121,7 @@ namespace StudentManagementSystem
 }
 
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Data.SqlClient;
-using System.Data;
-using System.Configuration;
+
 
 
 namespace StudentManagementSystem
@@ -245,14 +241,6 @@ namespace StudentManagementSystem
 }
 
 
-
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace StudentManagementSystem
 {
     public class Candidate : ICandidate
@@ -356,15 +344,8 @@ namespace StudentManagementSystem
     }
 }
 
-
-
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 namespace StudentManagementSystem
+
 {
     interface ICandidate
     {
