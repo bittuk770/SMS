@@ -1,0 +1,377 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace StudentManagementSystem
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            menu();
+            //Console.ReadKey();
+            int option;
+            Console.WriteLine("Enter the option");
+            option = Convert.ToInt32(Console.ReadLine());
+            while (option != 4)
+            {
+                switch (option)
+                {
+                    case 1:
+                        AddCandidate();
+                        break;
+                    case 2:
+                        ViewCandidates();
+                        break;
+                    case 3:
+                        DeleteCandidate();
+                        break;
+                    case 4:
+                        break;
+
+                }
+                menu();
+                Console.WriteLine("Ennetr the option");
+                option = int.Parse(Console.ReadLine());
+
+            }
+            Console.ReadLine();
+        }
+        static void menu()
+        {
+            Console.WriteLine("=================Menu============");
+            Console.WriteLine("1.Add candidates");
+            Console.WriteLine("2.View Candidates");
+            Console.WriteLine("3.Delete Candidate");
+            Console.WriteLine("4.Exit");
+
+        }
+        static void AddCandidate()
+        {
+            string name;
+            string addres;
+            int id;
+            int ex;
+            Console.WriteLine("Enter Candidate's Name");
+            name = Console.ReadLine();
+            Console.WriteLine("Enter Candidate's Address");
+            addres = Console.ReadLine();
+            Console.WriteLine("Enter Vacancy ID");
+            id = int.Parse(Console.ReadLine());
+            Console.WriteLine("Enter Experience");
+            ex = int.Parse(Console.ReadLine());
+            Candidate objcand = new Candidate();
+            objcand.Candname = name;
+            objcand.Addr = addres;
+            objcand.Vacid = id;
+            objcand.Exp = ex;
+            int result = DBClass.AddCandidate(objcand);
+            if (result == 1)
+            {
+                Console.WriteLine("Successfully Added ID: " + result);
+            }
+        }
+        static void DeleteCandidate()
+        {
+
+            int experr;
+
+            Console.WriteLine("Enter Experience");
+            experr = int.Parse(Console.ReadLine());
+            bool result = DBClass.DeleteCandidate(experr);
+            if (result == true)
+            {
+
+                Console.WriteLine("Candidate Deleted.");
+            }
+        }
+
+
+
+
+
+
+        public static void ViewCandidates()
+        {
+            List<Candidate> FisrtCandidate = new List<Candidate>();
+            int expt;
+            Console.WriteLine("Enter Experience");
+            expt = int.Parse(Console.ReadLine());
+
+
+
+            FisrtCandidate = DBClass.ViewCandidates(expt);
+            Console.WriteLine("Student Details");
+            foreach (Candidate objcand in FisrtCandidate)
+            {
+                Console.WriteLine("Candidate Id " + objcand.Candid);
+                Console.WriteLine("Candidate Name " + objcand.Candname);
+                Console.WriteLine("Vacancy Id " + objcand.Vacid);
+                Console.WriteLine("Experience " + objcand.Exp);
+                Console.WriteLine("Address " + objcand.Addr);
+
+            }
+        }
+    }
+}
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Data.SqlClient;
+using System.Data;
+using System.Configuration;
+
+
+namespace StudentManagementSystem
+{
+    public class DBClass
+    {
+        static SqlCommand com;
+        static SqlConnection conn;
+
+
+        static SqlConnection GetConnection()
+        {
+            string conStr = "Data Source=inchnilpdb02\\mssqlserver1;Initial Catalog=CHN16_MMS98_Test;User Id=mms98user;Password=mms98user";
+            try
+            {
+                if (!string.IsNullOrEmpty(conStr))
+                {
+                    return new SqlConnection(conStr);
+                }
+                else
+                    return null;
+
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public static int AddCandidate(Candidate objcandidate)
+        {
+            conn = GetConnection();
+            try
+            {
+                if (conn.State == System.Data.ConnectionState.Closed)
+                {
+                    conn.Open();
+
+                }
+            }
+            catch
+            {
+                Console.WriteLine("Connection not eshtablished");
+            }
+
+
+            com = new SqlCommand("AddCandidate", conn);
+            com.CommandType = CommandType.StoredProcedure;
+            com.Parameters.Add(new SqlParameter("@Candidatename", objcandidate.Candname));
+            com.Parameters.Add(new SqlParameter("@address", objcandidate.Addr));
+            com.Parameters.Add(new SqlParameter("@vacancyid", objcandidate.Vacid));
+            com.Parameters.Add(new SqlParameter("@Experience", objcandidate.Exp));
+            SqlParameter canNoParam = com.Parameters.Add(new SqlParameter("@CandidateID", objcandidate.Candid));
+            canNoParam.Direction = ParameterDirection.Output;
+            int i = 0;
+            i = com.ExecuteNonQuery();
+            if (i > 0)
+            {
+
+
+                Console.WriteLine("Successfully Added in the Database");
+
+                return (int)canNoParam.Value;
+            }
+            return 0;
+
+        }
+        public static bool DeleteCandidate(int expt)
+        {
+            conn = GetConnection();
+            if (conn.State == System.Data.ConnectionState.Closed)
+            {
+                conn.Open();
+            }
+            com = new SqlCommand("DeleteCandidate1", conn);
+            com.CommandType = CommandType.StoredProcedure;
+            com.Parameters.Add(new SqlParameter("@id", expt));
+            int result = com.ExecuteNonQuery();
+            conn.Close();
+            if (result > 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public static List<Candidate> ViewCandidates(int exptt)
+        {
+            List<Candidate> FirstCandiates = new List<Candidate>();
+
+            conn = GetConnection();
+            if (conn.State == System.Data.ConnectionState.Closed)
+            {
+                conn.Open();
+            }
+            com = new SqlCommand("ViewCandidate", conn);
+            com.CommandType = CommandType.StoredProcedure;
+            com.Parameters.Add(new SqlParameter("@Experience", exptt));
+            SqlDataReader canReader = com.ExecuteReader();
+            while (canReader.Read())
+            {
+                Candidate objcand = new Candidate();
+                objcand.Addr = canReader["Address"].ToString();
+                objcand.Candname = canReader["CandidateName"].ToString();
+                objcand.Candid = Convert.ToInt32(canReader["CandidateID"].ToString());
+                objcand.Exp = Convert.ToInt32(canReader["Experience"].ToString());
+                FirstCandiates.Add(objcand);
+
+            }
+            return FirstCandiates;
+
+
+
+
+        }
+    }
+}
+
+
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace StudentManagementSystem
+{
+    public class Candidate : ICandidate
+    {
+        int candid;
+        string addr;
+        int vacid;
+        int exp;
+        string candname;
+        public Candidate()
+        {
+
+        }
+
+        public Candidate(int candid, string addr, int vacid, int exp, string candname)
+        {
+            this.candid = candid;
+            this.addr = addr;
+            this.vacid = vacid;
+            this.exp = exp;
+            this.Candname = candname;
+        }
+
+        public int Candid
+        {
+            get
+            {
+                return candid;
+            }
+
+            set
+            {
+                candid = value;
+            }
+        }
+
+        public string Addr
+        {
+            get
+            {
+                return addr;
+            }
+
+            set
+            {
+                addr = value;
+            }
+        }
+
+        public int Vacid
+        {
+            get
+            {
+                return vacid;
+            }
+
+            set
+            {
+                vacid = value;
+            }
+        }
+
+        public int Exp
+        {
+            get
+            {
+                return exp;
+            }
+
+            set
+            {
+                exp = value;
+            }
+        }
+
+        public string Candname
+        {
+            get
+            {
+                return candname;
+            }
+
+            set
+            {
+                candname = value;
+            }
+        }
+
+        string ICandidate.candname
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+    }
+}
+
+
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+namespace StudentManagementSystem
+{
+    interface ICandidate
+    {
+        string Addr { get; set; }
+        int Candid { get; set; }
+        int Exp { get; set; }
+        int Vacid { get; set; }
+        string candname { get; set; }
+    }
+}
