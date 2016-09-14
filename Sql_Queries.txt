@@ -1,0 +1,39 @@
+create table tbl_Vacancy1(VacancyID int identity(1,1)
+primary key,VacancyDescription varchar(50) not null,Location varchar(50),TotalCandidates int)
+
+
+create table tbl_Candidate(CandidateID int identity(1,1) primary key,
+CandidateName varchar(50) not null,Address varchar(100),
+VacancyID int Foreign key references tbl_Vacancy1(VacancyID),Experience int check(Experience>0));
+
+select* from tbl_Candidate;
+		insert into tbl_Vacancy1(VacancyDescription,Location,TotalCandidates) values('Major','Shillong','256')
+insert into tbl_Candidate(CandidateName,Address,VacancyID,Experience)
+							 values('Shreyash','Mumbai',2,10);
+insert into tbl_Candidate(CandidateName,Address,Experience)
+							 values('Shreya','Delhi',12);
+
+
+select * from tbl_Vacancy1
+select * from tbl_Candidate where CandidateID=4;
+delete from tbl_Candidate where  CandidateID=4;
+select * from tbl_Vacancy1;
+
+update tbl_Candidate set VacancyID = 1,Experience = 5 where CandidateID = 1;
+select * from tbl_Candidate where VacancyID is null; 
+select tbl_Candidate.CandidateID,tbl_Candidate.CandidateName,tbl_Vacancy1.VacancyDescription from tbl_Vacancy1 inner join tbl_Candidate on tbl_Candidate.VacancyID = tbl_Vacancy1.VacancyID;
+select * from tbl_Vacancy1 where Location='Chennai' or Location='Shillong';
+
+
+create proc AddCandidate ( @Candidatename varchar(50),@address varchar(50),@vacancyid int,@Experience int)
+as
+begin
+insert into tbl_Candidate(CandidateName,Address,VacancyID,Experience) values(@Candidatename,@address,@vacancyid,@Experience)
+end
+
+
+create proc ViewCandidate(@Experience int)
+as
+begin
+select * from tbl_Candidate where Experience= @Experience;
+end
