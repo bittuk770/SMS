@@ -388,3 +388,65 @@ namespace ConsoleApplication3
 
     }
 }
+
+
+
+
+
+Travel company wants to implement the web based booking system for their customers.
+Create following screens with respective fields for the booking system using Asp.Net pages and CSS.
+1) Home Screen
+Fields: Navigation menu for Home screen, Login screen and Booking screen,Register Screen,View booking
+
+2) Register Screen
+
+a) User ID text box
+b) Password text box
+c) Submit Button
+
+Complete mandatory validations using javascript. The details should be added to Registration table using connected architecture.
+
+Registration table
+UserID –varchar(10) –Primary Key
+Password – varchar(20)
+
+
+2) Login Screen	
+Fields:
+a) User ID text box
+b) Password text box
+c) Login Button
+d) Reset Button
+Complete validations using Javascript.(Mandatory validations). Complete the login validation against registration table in database.If success redirect to login page.
+
+3) Booking screen
+Fields:
+a) From Location dropdown list 
+b) To Location drop down list
+c) Date –Calendar Controls
+d) Bus Type AC/Non-AC radio button
+e) Number of Passenger textbox
+f) Submit Button
+g) Cancel Button
+Populate the From location with the list of places like
+Chennai,Bangalore,Kanyakumari,Hyderabad,Madurai.
+If thE From is selected with one of the location that location should not be populated in To. On submit button click add the details to Reservation table
+Resrvation table
+
+FromLocation –Varchar(20)
+ToLocation-varchar(20)
+Numbet of passengers –int
+Date –Date
+Bus Type – varchar(10)
+	
+4) In View Booking show the bookings done by the logged in user in a gridview using disconnected in View Booking page
+Instructions
+1) Login screen.
+a) Use mandatory field validation using JavaScript
+b) Include background color using CSS and format heading using CSS
+2) Booking Screen
+a) All the filed are mandatory. Complete using Asp.net Validations
+b) Number of Passenger textbox should be between 1 to 10.
+c) On successful Submit show random Booking ID using the JavaScript pop up
+d) On Cancel button click clear the fields.
+e)  Include background color using CSS
